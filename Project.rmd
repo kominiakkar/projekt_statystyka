@@ -1,0 +1,321 @@
+---
+title: "Projekt zaliczeniowy"
+author: "**Karolina Kominiak**"
+date: "pierwszy semestr roku akademickiego 2022/2023"
+output:
+  html_document:
+    css: "https://artemis.wszib.edu.pl/~kakomini/styl.css"
+---
+```{r, echo = FALSE}
+# W większości przypadków, dla zachowania czystości prezentacji, zdecydowałam się nie umieszczać w niej kodu, a jedynie uzyskane wyniki. Sposób rozwiązania oczywiście znajduje się w tym pliku :)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+```{r}
+dane<-read.csv("https://artemis.wszib.edu.pl/~kakomini/processed.cleveland.data")
+nazwy<-c("Wiek","Płeć","Rodzaj_bólu_klatki_piersiowej","Ciśnienie_krwi_podczas_spoczynku","Cholesterol_w_surowicy","Poziom_cukru_we_krwi_na_czczo","EKG_przy_spoczynku","Maksymalne_osiągnięte_tętno","Dławica_wywołana_ćwiczeniami","Ćwiczenie_przy_obniżeniu_odcinka_ST","Szczytowy_odcinek_ST_podczas_ćwiczenia","Liczba_głównych_naczyń_we_fluoroskopii","Talasemia","Pewność_diagnozy_choroby_serca")
+colnames(dane)<-nazwy
+```
+
+## Wstęp
+W swojej prezentacji postanowiłam rozważyć bazę danych dotyczącą chorób serca u pacjentów pewnego szpitala w Cleeveland na oddziale kardiologincznym w danym miesiącu. Pochodzi ona ze strony internetowej UCI Machine Learning Repository, a link do niej znajduje się [tutaj](https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/). 
+
+W swoich obliczeniach jako populację przyjmuję tych właśnie pacjentów.
+
+W kolejnym slajdzie podaję informacje, które znajdziemy w bazie.
+
+## Kolumny
+- Wiek
+- Płeć
+- Rodzaj bólu klatki piersiowej
+- Ciśnienie krwi podczas spoczynku
+- Cholesterol w surowicy
+- Poziom cukru we krwi na czczo
+- EKG przy spoczynku
+- Maksymalne osiągnięte tętno
+- Dławica wywołana ćwiczeniami
+- Ćwiczenie przy obniżeniu odcinka ST
+- Szczytowy odcinek ST podczas ćwiczenia
+- Liczba głównych naczyń we fluoroskopii
+- Talasemia
+- Pewność diagnozy choroby serca
+
+## Opis danych
+
+W mojej prezentacji skupię się na kolumnach "Cholesterol w surowicy" (podany w mg/dl), "Pewność diagnozy choroby serca" (podana w skali 0-4, gdzie 0 oznacza brak pewności występowania choroby, a 4 oznacza stuprocentową pewność), "Ciśnienie krwi  podczas spoczynku" podane w mmHg, oraz "Płeć" (oznaczona 0 - kobieta, 1 - mężczyzna) i "Wiek" w celu rozważenia występowania poszczególnych zjawisk pośród przedstawicieli różnych grup
+
+
+## Wykres liniowy wieku pacjentów, u których zdiagnozowano pewną chorobę serca
+Za pomocą wykresu liniowego możemy przedstawić wiek pacjentów, u których zdiagnozowano pewną chorobę serca (przyjmujemy, że jest to taka, dla której pewność jest większa od lub równa 3, zatem 3 lub 4).
+
+```{r}
+pewnadiagnoza <- dane[dane$Pewność_diagnozy_choroby_serca >= 3,]
+
+plot(pewnadiagnoza$Wiek, type='l', main="Wykres wieku pacjentów z pewną diagnozą choroby serca", xlab = "Pacjent", ylab="Wiek", col='darkorange4')
+```
+
+Z wykresu możemy wyczytać, że zdecydowana większość tych pacjentów to osoby powyżej 50. roku życia
+
+## Cholesterol
+
+Cholesterol jest substancją z grupy lipidów. Tak zwany dobry cholesterol, HDL, między innymi buduje błony komórkowe, bierze udział w wytwarzaniu witaminy D i hormonów oraz wspomaga prawidłowe działanie mózgu. Jak powszechnie jednak wiadomo, istnieje również tzw. zły cholesterol, LDL, który mimo bycia niezbędnym do prawidłowego funkcjonowania komórek naszego organizmu, w nadmiernej ilości może przyczynić się do wielu chorób serca. W mojej prezentacji skupię się głównie na przeanalizowaniu danych dotyczących poziomu cholesterolu oraz jego związku z innymi czynnikami.
+
+
+## Obliczenia do statystyk opisowych dla kolumny "Cholesterol w surowicy"
+
+```{r}
+echo=FALSE
+cholesterol<-dane$Cholesterol_w_surowicy
+```
+Dla naszej wybranej kolumny obliczamy następujące wartości:
+
+- Wartość minimalna: `r min(cholesterol)` mg/dl
+
+- Wartość maksymalna: `r max(cholesterol)` mg/dl
+
+- Wartość średnia: `r mean(cholesterol)` mg/dl
+
+- Mediana: `r median(cholesterol)` mg/dl
+
+- Podział na kwartyle: 
+    - 25% - `r quantile(cholesterol, probs = 0.25)` mg/dl
+    - 50% - `r quantile(cholesterol, probs = 0.5)` mg/dl 
+    - 75% - `r quantile(cholesterol, probs = 0.75)` mg/dl
+    - 100% - `r quantile(cholesterol, probs = 1)` mg/dl
+
+
+## Dalsze obliczenia
+
+- Rozstęp: `r max(cholesterol)-min(cholesterol)` mg/dl
+
+- Wariancja: `r var(cholesterol)` mg/dl
+
+- Odchylenie standardowe: `r sd(cholesterol)` mg/dl
+
+- Odchylenie przeciętne od mediany: `r mad(cholesterol)` mg/dl
+
+
+## Wnioski
+
+Dowiadujemy się, że **średni poziom cholesterolu** u naszej populacji wynosi `r mean(cholesterol)` mg/dl, czyli plasuje się powyżej zdrowej normy. Na podwyższenie tego parametru wśród badanych pacjentów wskazuje także obliczona **mediana**, wynosząca `r median(cholesterol)` mg/dl. Co więcej, z **podziału na kwartyle** dowiadujemy się, że już na poziomie dolnego kwartyla wartość cholesterolu przewyższa normę, co oznacza, że nawet 25% badanych pacjentów nie cieszy się zdrowym poziomem cholesterolu we krwi. 
+
+Aby zobaczyć, z jakim zakresem obserwacji mamy do czynienia, obliczyliśmy **rozstęp**, który wyniósł `r max(cholesterol)-min(cholesterol)` mg/dl, z czego dowiedzieliśmy się, że zakres jest bardzo duży. Biorąc to pod uwagę, możemy spodziewać się, że również **wariancja** naszych obserwacji będzie duża - i faktycznie, wynosi ona aż `r var(cholesterol)` mg/dl, co oznacza, że wartości w naszym zbiorze są bardzo zróżnicowane. **Odchylenie standardowe** informuje nas o tym, jak szeroko wartości poziomu cholesterolu u naszych pacjentów są "rozrzucone" wokół jej średniej. W naszym przypadku wynosi `r sd(cholesterol)` mg/dl, dowiadujemy się zatem, że badane wartości nie są skupione blisko średniej. Zbadaliśmy także **medianowe odchylenie bezwzględne**, dzięki któremu dowiedzieliśmy się, że wartości poziomu cholesterolu odchylają się znacznie także od mediany.
+
+
+## Przedział ufności dla średniej
+```{r}
+chorypacjent <- dane[dane$Pewność_diagnozy_choroby_serca >= 3,]
+probapac<-chorypacjent[sample(nrow(chorypacjent), 10),]
+```
+Badamy próbę losowo wybranych 10 pacjentów z populacji złożonej z 48 osób, u których wykryto pewną chorobę serca (poziom pewności 3 lub 4).
+
+Średnia wieku pacjentów z próby wynosi `r mean(probapac$Wiek)`. Sprawdzimy, jak średnia wieku pacjentów z próby odnosi się do średniej wieku wszystkich pacjentów populacji.
+
+Jako poziom istotności przyjmujemy alfa = 0.05 
+
+```{r}
+w <- c(probapac$Wiek)
+n <- length(w)
+m <- mean(w)
+s <- sd(w)
+alfa = 0.05; e <- qt(1-alfa/2,n-1)
+E<-e*s/sqrt(n)
+przedzial_od<-m+c(-E)
+przedzial_do<-m+c(E)
+```
+Otrzymujemy przedział ufności dla średniej pomiędzy `r przedzial_od` do `r przedzial_do`, a więc zgodnie z definicją przedziału ufności możemy stwierdzić, że z założonym przez nas prawdopodobieństwem, średnia wieku populacji pacjentów wyniesie między `r przedzial_od` lat do `r przedzial_do` lat.
+
+
+## Zdrowy poziom cholesterolu - minimalna liczebność próby
+
+```{r}
+cholpn = dane[dane$Cholesterol_w_surowicy >= 200,]
+```
+U zdrowego człowieka wartość cholesterolu w osoczu nie powinna przekraczać 200 mg/dl. Możemy zbadać związek podwyższonego cholesterolu z pozostałymi parametrami. 
+
+Wyodrębniamy z naszej populacji grupę pacjentów, których poziom cholesterolu przekracza zdrową normę. Wynosi ona `r nrow(cholpn)`.
+
+Chcemy zbadać średnie ciśnienie krwi podczas spoczynku u tych pacjentów. Zakładamy, że nie mamy możliwości przeprowadzenia naszych badań na wszystkich pacjentach, wobec tego musimy wybrać spośród nich próbę. 
+
+Czy do naszych badań próba złożona ze 130 pacjentów będzie wystarczająca, jeśli chcemy utrzymać wartość przyjętego błedu na poziomie mniejszym niż 0.1, zakładając współczynnik alfa = 0.05?
+
+```{r}
+cisnienie <- dane$Ciśnienie_krwi_podczas_spoczynku
+n <- nrow(cholpn)
+k <- 130
+f <- k/n
+d <- 0.1
+alfa <- 0.05
+e <- qnorm(1-alfa/2)
+nmin <- e^2*f*(1-f)/d^2
+```
+Z wykonanych obliczeń uzyskujemy wynik równy `r nmin`, który jest mniejszy od zakładanego 130, zatem możemy stwierdzić, że próba jest wystarczająca.
+
+
+## Analiza wariancji
+```{r}
+dane2<-dane[,-c(3,4,6,7,8,9,10,11,12,13,14)]
+Grupa<-''
+dane2<-cbind(dane2, Grupa)
+
+kob<-dane2[dane2$Płeć==0,]
+mez<-dane2[dane2$Płeć==1,]
+
+kobpon50<-kob[kob$Wiek<50,]
+kobpow50<-kob[kob$Wiek>=50,]
+mezpon50<-mez[mez$Wiek<50,]
+mezpow50<-mez[mez$Wiek>=50,]
+
+kob1chol<-kobpon50[kobpon50$Cholesterol_w_surowicy>=200,]
+kob2chol<-kobpow50[kobpow50$Cholesterol_w_surowicy>=200,]
+mez1chol<-mezpon50[mezpon50$Cholesterol_w_surowicy>=200,]
+mez2chol<-mezpow50[mezpow50$Cholesterol_w_surowicy>=200,]
+
+k1<-kob1chol[sample(nrow(kob1chol), 15),]
+for (i in 1:nrow(k1)){
+  k1$Grupa[i]<- "K1"
+}
+k2<-kob2chol[sample(nrow(kob2chol), 15),]
+for (i in 1:nrow(k2)){
+  k2$Grupa[i]<- "K2"
+}
+m1<-mez1chol[sample(nrow(mez1chol), 15),]
+for (i in 1:nrow(m1)){
+  m1$Grupa[i]<- "M1"
+}
+m2<-mez2chol[sample(nrow(mez2chol), 15),]
+for (i in 1:nrow(m2)){
+  m2$Grupa[i]<- "M2"
+}
+
+```
+
+Rozpatrujemy 4 grupy złożone z losowo wybranych 15 pacjentów pod kątem podwyższonego poziomu cholesterolu: kobiety poniżej 50. roku życia (K1), kobiety w wieku 50 lat i powyżej (K2), mężczyźni poniżej 50. roku życia (M1) i mężczyźni w wieku 50 lat i powyżej (M2). W tym celu przeprowadzimy dwuczynnikową analizę wariancji, przyjmując jako czynnik A płeć pacjentów, a jako czynnik B ich grupę wiekową. Stawiamy następujące hipotezy:
+
+- Hipoteza zerowa A: płeć pacjentów nie ma wpływu na poziom cholestrolu
+- Hipoteza zerowa B: wiek pacjentów nie ma wpływu na poziom cholesterolu
+- Dodatkowa hipoteza zerowa AB: płeć i wiek pacjentów nie mają wpływu na poziom cholesterolu
+
+
+## Wykres do analizy wariancji
+```{r}
+roz<-rbind(k1,k2,m1,m2)
+
+boxplot(roz$Cholesterol_w_surowicy~roz$Grupa, pch=19, main="Wykres do analizy wariancji", col = "burlywood", xlab = "Grupa", ylab = "Poziom cholesterolu w surowicy")
+points(c(1,2,3,4), tapply(roz$Cholesterol_w_surowicy, roz$Grupa, mean), col="darkorange4", pch=19)
+
+```
+
+
+
+## Analiza wariancji #2
+
+```{r}
+cholesterolwsurowicy<-roz$Cholesterol_w_surowicy
+plec<-roz$Płeć
+wiekpacjenta<-roz$Wiek
+
+wynik.aov <- aov(cholesterolwsurowicy~plec+wiekpacjenta + plec:wiekpacjenta, data = roz)
+
+alfa=0.05; k= 4; n=dim(roz)[1]
+wartkryt <- qf(1-alfa, k-1, n-k)
+
+```
+Chcemy sprawdzić słuszność postawionych wcześniej hipotez. W tym celu korzystamy najpierw z funkcji aov(). Przyjmujemy jako poziom istotności alfa = 0.05. Obliczamy również wartość krytyczną.
+
+- Wartość obliczona: 
+```{r, echo = TRUE}
+summary(wynik.aov)
+```
+- Wartość krytyczna: `r qf(1-alfa, k-1, n-k)`
+
+## Wnioski do analizy wariancji
+
+**Wniosek 1 - czynnik A:**
+
+- Ponieważ obliczona wartość F (6.260) jest większa od wartości krytycznej (2.769431), to hipotezę zerową A należy odrzucić.
+
+- Ponieważ obliczona wartość p-value (0.0153) jest mniejsza od założonego alfa (0.05), to hipotezę zerową A należy odrzucić.
+
+**Wniosek 2 - czynnik B:**
+
+- Ponieważ obliczona wartość F (6.374) jest większa od wartości krytycznej (2.769431), to hipotezę zerową B należy odrzucić.
+
+- Ponieważ obliczona wartość p-value (0.0144) jest mniejsza od założonego alfa (0.05), to hipotezę zerową B należy odrzucić.
+
+**Wniosek 3 - czynniki A i B:**
+
+- Ponieważ obliczona wartość F (4.380) jest większa od wartości krytycznej (2.769431), to hipotezę zerową AB należy odrzucić.
+
+- Ponieważ obliczona wartość p-value (0.0409) jest mniejsza od założonego alfa (0.05), to hipotezę zerową AB należy odrzucić.
+
+## Test parametryczny - średnia wieku osób z podwyższonym cholesterolem
+Za pomocą testu parametrycznego możemy zbadać prawdziwość poniższej hipotezy:
+
+- Hipoteza zerowa: średnie wieku mężczyzn z podwyższonym cholesterolem i kobiet z podwyższonym cholesterolem nie różnią się od siebie znacznie.
+- Hipoteza alternatywna: średnie wieku mężczyzn z podwyższonym cholesterolem i kobiet z podwyższonym cholesterolem różnią się od siebie znacznie.
+
+Zakładamy, że alfa = 0.05.
+
+```{r}
+kobzpodwchol <- dane[dane$Płeć ==0 & dane$Cholesterol_w_surowicy>= 200,]
+n1<-nrow(kobzpodwchol)
+mezzpodwchol <- dane[dane$Płeć ==1 & dane$Cholesterol_w_surowicy>= 200,]
+n2<-nrow(mezzpodwchol)
+
+mean(kobzpodwchol$Wiek)
+mean(mezzpodwchol$Wiek)
+
+alfa <-0.05
+
+t.test(kobzpodwchol$Wiek,mezzpodwchol$Wiek)
+```
+
+Ponieważ p-value naszego testu wynosi 0.167, co jest wartością większą niż założone alfa (0.05), nie mamy podstaw do odrzucenia hipotezy zerowej.
+
+## Cholesterol - test normalności
+
+Możemy także zbadać normalność rozkładu wartości kolumny "Cholesterol w surowicy". W tym celu przeprowadzimy test Shapiro-Wilka, stawiając następujące hipotezy:
+
+- Hipoteza zerowa: wartości poziomu cholesterolu we krwi są z rozkładu normalnego
+- Hipoteza alternatywna: wartości poziomu cholesterolu we krwi nie są z rozkładu normalnego
+
+```{r}
+test <- c(dane$Cholesterol_w_surowicy)
+alfa <- 0.05
+shapiro.test(test)
+```
+Ponieważ obliczona wartość p-value wynosi 6.603e-09, czyli jest mniejsza od założonego alfa (0.05), hipotezę zerową o normalności rozkładu należy odrzucić.
+
+Ilustrujemy nasze wyniki na histogramie.
+
+## Histogram rozkładu wartości cholesterolu we krwi
+
+```{r}
+hist(test, col = "burlywood", prob = T)
+lines(density(test), col="darkorange4")
+```
+
+Na histogramie widzimy dokładnie, że nie mamy do czynienia z wykresem Gaussa, co tym bardziej może utwierdzić nas w przekonaniu, że zmienne nie są z rozkładu normalnego.
+
+## Podsumowanie
+Dzięki przeprowadzonym doświadczeniom statystycznym:
+
+- dowiedzieliśmy się, że większość pacjentów, u których zdiagnozowano pewną chorobę serca to osoby powyżej 50. roku życia
+
+- przeprowadziliśmy statystyki opisowe dla poziomu cholesterolu w osoczu u naszej populacji
+
+- sprawdziliśmy przedział ufności dla średniej wieku pacjentów o pewnej diagnozie choroby serca, który przy naszych założeniach wyniósł `r round(przedzial_od)` lat do `r round(przedzial_do)` lat
+
+- sprawdziliśmy minimalną liczebność próby dla pacjentów z podwyższonym poziomem cholesterolu do zbadania ciśnienia krwi podczas spoczynku, która przy naszych założeniach wyniosła `r round(nmin)`
+
+- przeprowadziliśmy dwuczynnikową analizę wariancji, z której dowiedzieliśmy się, że zarówno płeć jak i wiek pacjentów mają wpływ na podwyższenie poziomu cholesterolu we krwi
+
+- przeprowadziliśmy test parametryczny, z którego dowiedzieliśmy się, że średnie wieku mężczyzn i kobiet z podwyższonym cholesterolem nie różnią się od siebie znacznie
+
+- za pomocą testu normalności Shapiro-Wilka zbadaliśmy normalność rozkładu wartości poziomu cholesterolu i dowiedzieliśmy się, że nie są one z rozkładu normalnego oraz stworzyliśmy histogram obrazujący rzeczywisty ich rozkład
+
+
+**Serdecznie dziękuję za uwagę!**
